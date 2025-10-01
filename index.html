@@ -1,146 +1,58 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>©SAYAN 2025 SERVER 1 — Star1 Hindi HD</title>
-
-  <!-- Shaka Player (compiled + ui) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.compiled.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css" crossorigin="anonymous">
-
+  <title>Shaka Player Full Template</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.8.9/controls.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body {
-      height: 100%;
-      width: 100%;
+    body {
+      margin: 0;
       background: #000;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      color: #fff;
-    }
-
-    /* Player container */
-    .shaka-video-container {
-      position: fixed;
-      inset: 0;
+      height: 100vh;
+      width: 100vw;
       display: flex;
-      align-items: center;
       justify-content: center;
-      background: #000;
-      z-index: 1;
+      align-items: center;
     }
-
+    #video-container {
+      width: 100%;
+      height: 100%;
+      background: black;
+      position: relative;
+    }
     video {
       width: 100%;
       height: 100%;
-      object-fit: cover;
-      background: #000;
-    }
-
-    /* Header overlay */
-    .top-bar {
-      position: absolute;
-      left: 12px;
-      top: 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      z-index: 6;
-      pointer-events: none;
-    }
-
-    .channel-logo {
-      height: 52px;
-      width: auto;
-      border-radius: 6px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.6);
-      pointer-events: auto;
-    }
-
-    .channel-meta {
-      display: flex;
-      flex-direction: column;
-      pointer-events: none;
-    }
-
-    .channel-title {
-      font-weight: 700;
-      font-size: 16px;
-      text-shadow: 0 2px 6px rgba(0,0,0,0.6);
-      pointer-events: none;
-    }
-
-    .channel-sub {
-      font-size: 12px;
-      opacity: 0.85;
-      pointer-events: none;
-    }
-
-    /* Small responsive tweaks */
-    @media (max-width: 720px) {
-      .channel-logo { height: 44px; }
-      .channel-title { font-size: 14px; }
-    }
-
-    /* Ensure Shaka UI overlays appear above everything */
-    .shaka-controls-container {
-      z-index: 5;
     }
   </style>
 </head>
 <body>
-  <!-- Logo + title -->
-  <div class="top-bar" aria-hidden="true">
-    <img class="channel-logo" id="channelLogo" src="https://jiotvimages.cdn.jio.com/dare_images/images/Star_Sports_HD1_Hindi.png" alt="Channel Logo">
-    <div class="channel-meta">
-      <div class="channel-title" id="channelName">Star1 Hindi HD</div>
-      <div class="channel-sub">©SAYAN 2025 SERVER 1 • Live</div>
-    </div>
+  <div id="video-container">
+    <video autoplay playsinline muted></video>
   </div>
 
-  <!-- Shaka player container -->
-  <div class="shaka-video-container" data-shaka-player-container>
-    <video id="video" data-shaka-player autoplay muted playsinline controls></video>
-  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.8.9/shaka-player.compiled.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.8.9/shaka-player.ui.min.js"></script>
 
   <script>
-    (async () => {
-      // --- Channel details (embedded, no external JSON required) ---
+    document.addEventListener('DOMContentLoaded', async () => {
+      const video = document.querySelector('video');
+      const container = document.getElementById('video-container');
+
+      const ui = new shaka.ui.Overlay(shaka.Player, container, video);
+      const player = ui.getControls().getPlayer();
+
+      // ========================
+      // TEMPLATE CONFIG
+      // ========================
       const streamInfo = {
         name: "Star1 Hindi HD",
-        // primary manifest URL (MPD)
-        id: "https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_HD1_Hindi_BTS/output/index.mpd",
-        // clearKey id/key (hex strings). We'll use these as clearKeys for Shaka.
-        id1: "400131994b445d8c8817202248760fda", // keyId
-        id2: "2d56cb6f07a75b9aff165d534ae2bfc4", // key
-        logo: "https://jiotvimages.cdn.jio.com/dare_images/images/Star_Sports_HD1_Hindi.png"
+        id: "https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_HD1_Hindi_BTS/output/index.mpd", // <-- MPD URL
+        id1: "400131994b445d8c8817202248760fda", // <-- Key ID
+        id2: "2d56cb6f07a75b9aff165d534ae2bfc4"  // <-- Key
       };
 
-      // Populate header
-      document.getElementById('channelName').textContent = streamInfo.name;
-      document.getElementById('channelLogo').src = streamInfo.logo;
-
-      // Shaka setup
-      const video = document.getElementById('video');
-
-      // Ensure Shaka is available
-      if (!window.shaka) {
-        console.error('Shaka Player library not loaded.');
-        return;
-      }
-
-      // Polyfill if needed
-      shaka.polyfill.installAll();
-
-      // Create player
-      const player = new shaka.Player(video);
-
-      // Create UI overlay
-      const container = document.querySelector('.shaka-video-container');
-      const ui = new shaka.ui.Overlay(player, container, video);
-
-      // UI configuration (from your config)
+      // UI Config
       const config = {
         controlPanelElements: [
           'play_pause',
@@ -154,79 +66,23 @@
           'picture_in_picture',
           'fullscreen',
           'overflow_menu'
-        ]
+        ],
+        seekBarColors: {
+          base: 'rgba(255,255,255,0.2)',
+          buffered: 'rgba(0,200,255,0.6)',
+          played: 'rgb(0,200,255)'
+        },
+        volumeBarColors: {
+          base: 'rgba(255,255,255,0.3)',
+          level: 'rgb(0,200,255)'
+        }
       };
       ui.configure(config);
 
-      // Prepare DRM clearKeys config using provided id1/id2.
-      // Convert hex strings to base64 if needed by clearKeys format.
-      // Shaka expects clearKeys values in base64url (no padding). We'll convert hex -> base64.
-      function hexToBase64Url(hex) {
-        // hex to bytes
-        const bytes = hex.match(/.{1,2}/g).map(b => parseInt(b, 16));
-        // bytes to binary string
-        let binary = '';
-        for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-        // base64
-        let b64 = btoa(binary);
-        // convert to base64url
-        b64 = b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        return b64;
-      }
+      // DRM (ClearKey)
+      const drmConfig = { clearKeys: { [streamInfo.id1]: streamInfo.id2 } };
 
-      const keyIdHex = streamInfo.id1;
-      const keyHex = streamInfo.id2;
-      let drmConfig = {};
-
-      try {
-        const keyIdB64 = hexToBase64Url(keyIdHex);
-        const keyB64 = hexToBase64Url(keyHex);
-
-        drmConfig = {
-          clearKeys: {}
-        };
-        drmConfig.clearKeys[keyIdB64] = keyB64;
-      } catch (err) {
-        console.warn('Failed to convert clearKeys from hex to base64url, trying raw usage.', err);
-        // fallback raw hex (may fail)
-        drmConfig = {
-          clearKeys: {
-            [keyIdHex]: keyHex
-          }
-        };
-      }
-
-      // We'll attempt to fetch an M3U (if you want to supply one in future).
-      // Current code will set streamUrl to the embedded MPD by default.
-      let cookieHeader = '';
-      let streamUrl = streamInfo.id; // default manifest
-
-      try {
-        // Optional: try to fetch a remote M3U (you included such logic previously).
-        // This fetch is tolerant: if it fails we'll continue with streamInfo.id
-        const resp = await fetch('https://raw.githubusercontent.com/alex8875/m3u/refs/heads/main/jstar.m3u', { cache: 'no-store' });
-        if (resp.ok) {
-          const m3uText = await resp.text();
-          // try to parse #EXTHTTP: "cookie":"..." lines if present
-          const lines = m3uText.split('\n');
-          for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
-            if (line.startsWith('#EXTHTTP:')) {
-              const cookieMatch = line.match(/"cookie"\s*:\s*"([^"]+)"/);
-              if (cookieMatch) {
-                cookieHeader = cookieMatch[1];
-                break;
-              }
-            }
-          }
-          // You previously used "name" variable; since we don't have it here, keep default.
-        }
-      } catch (e) {
-        // ignore; keep default streamUrl
-        console.warn('Optional M3U fetch failed (ignored):', e);
-      }
-
-      // Player configuration: streaming, manifest, networking filters, drm
+      // Player Config
       player.configure({
         drm: drmConfig,
         streaming: {
@@ -239,10 +95,7 @@
             maxAttempts: 5,
             baseDelay: 300,
             backoffFactor: 1.2
-          },
-          segmentRequestTimeout: 8000,
-          segmentPrefetchLimit: 2,
-          useNativeHlsOnSafari: true
+          }
         },
         manifest: {
           retryParameters: {
@@ -252,133 +105,58 @@
         }
       });
 
-      // Register request filter to modify headers (referer, user-agent, cookie) and append cookie param if needed
+      // Networking headers (Referer, User-Agent, Cookie)
       player.getNetworkingEngine().registerRequestFilter((type, request) => {
-        try {
-          // Set headers
-          request.headers['Referer'] = 'https://www.jiotv.com/';
-          request.headers['User-Agent'] = "plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6";
-
-          if (cookieHeader) {
-            request.headers['Cookie'] = cookieHeader;
-          }
-
-          // Optionally append cookieHeader string to manifest/segment URIs if not present
-          if ((type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
-               type === shaka.net.NetworkingEngine.RequestType.SEGMENT) &&
-              request.uris && request.uris[0] && !request.uris[0].includes('__hdnea__=')) {
-            const separator = request.uris[0].includes('?') ? '&' : '?';
-            // Append cookieHeader safely (if cookieHeader looks like key=value pairs) else skip
-            if (cookieHeader && cookieHeader.includes('=')) {
-              request.uris[0] += separator + cookieHeader;
-            }
-          }
-        } catch (err) {
-          console.warn('Request filter error:', err);
-        }
+        request.headers['Referer'] = 'https://www.jiotv.com/';
+        request.headers['User-Agent'] = "plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6";
+        // request.headers['Cookie'] = "YOUR_COOKIE_IF_REQUIRED";
       });
 
-      // Error handling
+      // Error Handling
       player.addEventListener('error', (event) => {
-        console.error('Shaka Player Error code', event.detail && event.detail.code, event.detail);
+        console.error('Shaka Player Error:', event.detail);
       });
 
-      // Autoplay helpers
-      const enableAutoplay = () => {
-        video.setAttribute('autoplay', '');
-        video.setAttribute('playsinline', '');
-        video.autoplay = true;
-      };
-
+      // Autoplay Management
       const attemptAutoplay = async () => {
         try {
-          // Try unmuted first
           video.muted = false;
           await video.play();
-          console.log('Unmuted autoplay successful');
-          return true;
-        } catch (error) {
-          console.log('Unmuted autoplay failed:', error && error.message);
+          console.log('Autoplay success (unmuted)');
+        } catch (e) {
+          console.warn('Unmuted autoplay failed, retrying muted...');
           try {
             video.muted = true;
             await video.play();
-            console.log('Muted autoplay successful');
-            return true;
-          } catch (mutedError) {
-            console.log('Muted autoplay failed:', mutedError && mutedError.message);
-            return false;
+            console.log('Autoplay success (muted)');
+          } catch (err) {
+            console.error('Autoplay failed:', err.message);
           }
         }
       };
 
-      // Auto fullscreen small screens on first play (mobile UX)
-      video.addEventListener('play', () => {
-        if (window.self === window.top && !document.fullscreenElement && window.innerWidth <= 768) {
-          try {
-            container.requestFullscreen();
-          } catch (e) {
-            console.log('Fullscreen request failed', e);
-          }
-        }
-      }, { once: true });
-
-      // Volume default
       video.addEventListener('loadedmetadata', () => {
-        try { video.volume = 0.8; } catch (e) {}
+        video.volume = 0.8;
       });
 
-      // Enable sound after first user interaction if autoplay muted
-      let hasUserInteracted = false;
-      const enableSoundOnInteraction = () => {
-        if (!hasUserInteracted && video.muted) {
-          video.muted = false;
-          hasUserInteracted = true;
-          console.log('Sound enabled after user interaction');
-        }
-      };
-      ['click', 'touchstart', 'keydown'].forEach(ev => {
-        document.addEventListener(ev, enableSoundOnInteraction, { once: true });
+      ['click', 'touchstart', 'keydown'].forEach(evt => {
+        document.addEventListener(evt, () => {
+          if (video.muted) {
+            video.muted = false;
+            console.log("Sound enabled after user interaction");
+          }
+        }, { once: true });
       });
 
       // Load the stream
       try {
-        enableAutoplay();
-
-        // final stream url (if streamUrl may have been changed by M3U parsing, it's already set)
-        console.log('Loading stream:', streamUrl);
-        await player.load(streamUrl);
-        console.log('Player loaded manifest: ', streamUrl);
-
-        // attempt autoplay
-        if (video.readyState >= 3) {
-          await attemptAutoplay();
-        } else {
-          video.addEventListener('canplay', attemptAutoplay, { once: true });
-          setTimeout(async () => {
-            if (video.paused) await attemptAutoplay();
-          }, 2000);
-        }
-      } catch (loadError) {
-        console.error('Load error:', loadError);
-        // Show an overlay message using alert (simple fallback)
-        alert('ভিডিও লোড হয়নি — কনসোলে ত্রুটি দেখো (developer console).');
+        await player.load(streamInfo.id);
+        console.log('Loaded:', streamInfo.name);
+        attemptAutoplay();
+      } catch (err) {
+        console.error('Load error:', err);
       }
-
-      // Visibility change: attempt to resume if needed
-      document.addEventListener('visibilitychange', () => {
-        if (!document.hidden && video.paused) {
-          attemptAutoplay();
-        }
-      });
-
-      // Expose some debug info to window for console debugging
-      window._shakaDebugInfo = {
-        streamInfo,
-        drmConfig,
-        cookieHeader
-      };
-
-    })();
+    });
   </script>
 </body>
-  </html>
+</html>
