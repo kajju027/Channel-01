@@ -1,59 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Shaka Player Full Template</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.8.9/controls.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shaka Player — Star2 kan (Mobile-first)</title>
+
+  <!-- Shaka Player + UI (stable) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.compiled.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css" crossorigin="anonymous">
+
   <style>
-    body {
-      margin: 0;
-      background: #000;
-      height: 100vh;
-      width: 100vw;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    :root {
+      --bg: #000;
+      --ui-z: 9999;
     }
-    #video-container {
-      width: 100%;
-      height: 100%;
-      background: black;
-      position: relative;
+    html,body { height:100%; width:100%; margin:0; background:var(--bg); color:#fff; -webkit-tap-highlight-color: transparent; }
+    /* Player container fills screen (mobile-first) */
+    .shaka-video-container {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      overflow: hidden;
+      z-index: 1;
     }
     video {
       width: 100%;
       height: 100%;
+      object-fit: cover;
+      background: #000;
+      display: block;
+    }
+
+    /* Ensure Shaka controls overlay above video */
+    .shaka-controls-container, .shaka-ui-container {
+      z-index: calc(var(--ui-z) + 1);
+    }
+
+    /* Small message overlay to show errors/status */
+    #msg {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 20px;
+      padding: 10px 12px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 8px;
+      text-align: center;
+      font-size: 14px;
+      pointer-events: none;
+      color: #fff;
+      z-index: calc(var(--ui-z) + 2);
+      display: none;
+    }
+
+    /* Center spinner before load (optional) */
+    .spinner {
+      position: absolute;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 4px solid rgba(255,255,255,0.08);
+      border-top-color: rgba(255,255,255,0.65);
+      animation: spin 1s linear infinite;
+      z-index: calc(var(--ui-z) + 2);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Responsive tweaks */
+    @media (max-width: 720px) {
+      #msg { font-size: 13px; bottom: 12px; }
     }
   </style>
 </head>
 <body>
-  <div id="video-container">
-    <video autoplay playsinline muted></video>
+  <!-- Player container required by Shaka UI -->
+  <div class="shaka-video-container" data-shaka-player-container>
+    <!-- single video element used by Shaka -->
+    <video id="video" data-shaka-player autoplay playsinline muted></video>
+
+    <!-- status message -->
+    <div id="msg" role="status" aria-live="polite"></div>
+
+    <!-- spinner -->
+    <div id="spinner" class="spinner" style="left:50%;top:50%;transform:translate(-50%,-50%);"></div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.8.9/shaka-player.compiled.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.8.9/shaka-player.ui.min.js"></script>
-
   <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      const video = document.querySelector('video');
-      const container = document.getElementById('video-container');
-
-      const ui = new shaka.ui.Overlay(shaka.Player, container, video);
-      const player = ui.getControls().getPlayer();
-
-      // ========================
-      // TEMPLATE CONFIG
-      // ========================
+    (async function () {
+      // ---------- Embedded stream info (user-provided) ----------
       const streamInfo = {
-        name: "Star1 Hindi HD",
-        id: "https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_HD1_Hindi_BTS/output/index.mpd", // <-- MPD URL
-        id1: "400131994b445d8c8817202248760fda", // <-- Key ID
-        id2: "2d56cb6f07a75b9aff165d534ae2bfc4"  // <-- Key
+        name: "Star2 kan",
+        id: "https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_2_Kannada_BTS/output/index.mpd",
+        id1: "7af2add2968a56309519ac2680c18f25", // keyId (hex)
+        id2: "f992a14e0def17ccdfe16f58c4ce56c5", // key (hex)
+        logo: "https://jiotvimages.cdn.jio.com/dare_images/images/Star_Sports_2_Kannada.png"
       };
 
-      // UI Config
-      const config = {
+      // UI elements
+      const video = document.getElementById('video');
+      const container = document.querySelector('.shaka-video-container');
+      const msg = document.getElementById('msg');
+      const spinner = document.getElementById('spinner');
+
+      function showMsg(text, timeout = 4000) {
+        msg.textContent = text;
+        msg.style.display = 'block';
+        if (timeout) {
+          clearTimeout(showMsg._t);
+          showMsg._t = setTimeout(() => msg.style.display = 'none', timeout);
+        }
+      }
+
+      // Check shaka presence
+      if (!window.shaka) {
+        alert('Shaka player library failed to load.');
+        return;
+      }
+
+      // install polyfills
+      shaka.polyfill.installAll();
+
+      // create player & UI overlay properly
+      const player = new shaka.Player(video);
+      const ui = new shaka.ui.Overlay(player, container, video);
+      // get controls object (for advanced use if needed)
+      const controls = ui.getControls();
+
+      // UI configuration: keep all useful controls
+      ui.configure({
         controlPanelElements: [
           'play_pause',
           'time_and_duration',
@@ -67,22 +145,45 @@
           'fullscreen',
           'overflow_menu'
         ],
+        // small visual tweaks
         seekBarColors: {
-          base: 'rgba(255,255,255,0.2)',
-          buffered: 'rgba(0,200,255,0.6)',
+          base: 'rgba(255,255,255,0.15)',
+          buffered: 'rgba(255,255,255,0.35)',
           played: 'rgb(0,200,255)'
         },
         volumeBarColors: {
-          base: 'rgba(255,255,255,0.3)',
+          base: 'rgba(255,255,255,0.12)',
           level: 'rgb(0,200,255)'
         }
-      };
-      ui.configure(config);
+      });
 
-      // DRM (ClearKey)
-      const drmConfig = { clearKeys: { [streamInfo.id1]: streamInfo.id2 } };
+      // Helper: convert hex string to base64url (needed for clearKeys)
+      function hexToBase64Url(hex) {
+        try {
+          const bytes = hex.match(/.{1,2}/g).map(b => parseInt(b, 16));
+          let binary = '';
+          for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+          let b64 = btoa(binary);
+          b64 = b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+          return b64;
+        } catch (e) {
+          console.warn('hexToBase64Url failed', e);
+          return null;
+        }
+      }
 
-      // Player Config
+      // Build DRM clearKeys object (Shaka expects base64url keys)
+      let drmConfig = {};
+      const kidB64 = hexToBase64Url(streamInfo.id1);
+      const keyB64 = hexToBase64Url(streamInfo.id2);
+      if (kidB64 && keyB64) {
+        drmConfig = { clearKeys: { [kidB64]: keyB64 } };
+      } else {
+        // fallback: try raw hex (less likely to work)
+        drmConfig = { clearKeys: { [streamInfo.id1]: streamInfo.id2 } };
+      }
+
+      // Player config: streaming + manifest + drm
       player.configure({
         drm: drmConfig,
         streaming: {
@@ -95,68 +196,112 @@
             maxAttempts: 5,
             baseDelay: 300,
             backoffFactor: 1.2
-          }
+          },
+          segmentRequestTimeout: 8000,
+          segmentPrefetchLimit: 2,
+          useNativeHlsOnSafari: true
         },
         manifest: {
-          retryParameters: {
-            timeout: 8000,
-            maxAttempts: 3
-          }
+          retryParameters: { timeout: 8000, maxAttempts: 3 }
         }
       });
 
-      // Networking headers (Referer, User-Agent, Cookie)
+      // Networking request filter to add headers (Referer, UA, Cookie if needed).
       player.getNetworkingEngine().registerRequestFilter((type, request) => {
-        request.headers['Referer'] = 'https://www.jiotv.com/';
-        request.headers['User-Agent'] = "plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6";
-        // request.headers['Cookie'] = "YOUR_COOKIE_IF_REQUIRED";
+        try {
+          // safe-set headers
+          request.headers = request.headers || {};
+          request.headers['Referer'] = 'https://www.jiotv.com/';
+          request.headers['User-Agent'] = "plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6";
+          // if you have a cookie token, uncomment and set it:
+          // request.headers['Cookie'] = 'YOUR_COOKIE_HERE';
+        } catch (e) {
+          console.warn('Request filter error', e);
+        }
       });
 
-      // Error Handling
-      player.addEventListener('error', (event) => {
-        console.error('Shaka Player Error:', event.detail);
+      // Handle player errors in console and show user-friendly message
+      player.addEventListener('error', (evt) => {
+        console.error('Shaka error', evt.detail);
+        spinner.style.display = 'none';
+        showMsg('ভিডিও লোডিং এ ত্রুটি হয়েছে — কনসোলে দেখো।', 8000);
       });
 
-      // Autoplay Management
-      const attemptAutoplay = async () => {
+      // Autoplay management: try unmuted then muted
+      async function attemptAutoplay() {
         try {
           video.muted = false;
           await video.play();
-          console.log('Autoplay success (unmuted)');
+          console.log('Unmuted autoplay OK');
         } catch (e) {
-          console.warn('Unmuted autoplay failed, retrying muted...');
+          console.log('Unmuted autoplay failed, trying muted', e && e.message);
           try {
             video.muted = true;
             await video.play();
-            console.log('Autoplay success (muted)');
-          } catch (err) {
-            console.error('Autoplay failed:', err.message);
+            console.log('Muted autoplay OK');
+          } catch (e2) {
+            console.warn('Autoplay failed', e2 && e2.message);
           }
         }
-      };
+      }
 
-      video.addEventListener('loadedmetadata', () => {
-        video.volume = 0.8;
-      });
-
-      ['click', 'touchstart', 'keydown'].forEach(evt => {
-        document.addEventListener(evt, () => {
-          if (video.muted) {
-            video.muted = false;
-            console.log("Sound enabled after user interaction");
+      // Enable sound on first user interaction (mobile friendly)
+      let interacted = false;
+      ['click','touchstart','keydown'].forEach(ev => {
+        document.addEventListener(ev, () => {
+          if (!interacted && video.muted) {
+            try { video.muted = false; } catch(e) {}
+            interacted = true;
+            console.log('User interaction: unmuted');
           }
         }, { once: true });
       });
 
-      // Load the stream
-      try {
-        await player.load(streamInfo.id);
-        console.log('Loaded:', streamInfo.name);
-        attemptAutoplay();
-      } catch (err) {
-        console.error('Load error:', err);
+      // Mobile UX: on first play attempt, request fullscreen on small screens
+      video.addEventListener('play', () => {
+        if (window.innerWidth <= 768 && !document.fullscreenElement) {
+          try {
+            container.requestFullscreen().catch(()=>{/*silent*/});
+          } catch(e){}
+        }
+      }, { once: true });
+
+      // Try to load stream and manage spinner/message
+      async function loadStream() {
+        spinner.style.display = 'block';
+        try {
+          console.log('Loading manifest:', streamInfo.id);
+          await player.load(streamInfo.id);
+          console.log('Manifest loaded');
+          spinner.style.display = 'none';
+          showMsg('স্ট্রিম লোড হয়েছে', 2000);
+          // try autoplay
+          await attemptAutoplay();
+        } catch (err) {
+          spinner.style.display = 'none';
+          console.error('Load error', err);
+          // Friendly message + more detail in console
+          showMsg('স্ট্রিম লোড করতে ব্যর্থ — কনসোলে ত্রুটি দেখো', 8000);
+        }
       }
-    });
+
+      // Visibility resume: if user comes back, try play if paused
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && video.paused) {
+          attemptAutoplay();
+        }
+      });
+
+      // Start loading
+      await loadStream();
+
+      // Expose debug info (remove in production)
+      window._shakaDebug = {
+        streamInfo,
+        drmConfig,
+      };
+
+    })();
   </script>
 </body>
 </html>
