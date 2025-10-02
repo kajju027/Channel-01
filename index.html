@@ -91,10 +91,7 @@
   </div>
 
   <div class="shaka-video-container" data-shaka-player>
-    <!-- 👇👇 poster link 👇👇 -->
-    <video autoplay playsinline preload="metadata" 
-      poster="https://files.catbox.moe/er9mt1.jpeg"></video>
-    <!-- ☝️☝️ -->
+    <video autoplay playsinline preload="metadata" poster=""></video>
   </div>
 
   <script>
@@ -108,7 +105,7 @@
         return; // block video setup in non-Chrome
       }
 
-      /********** Shaka player code **********/
+      /********** Your original Shaka player code **********/
       shaka.polyfill.installAll();
 
       if (!shaka.Player.isBrowserSupported()) {
@@ -144,7 +141,7 @@
           }
         };
         let cookieHeader = "__hdnea__=st=1759351805~exp=1759438205~acl=/*~hmac=d959ae2978f5f703a28f9d81d7c5fe3247c0b967ef675a4c375d2004155b5aed";
-        let streamUrl = "https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_HD1_Hindi_BTS/output/index.mpd";
+        let streamUrl = "https://jiotvmblive.cdn.jio.com/bpk-tv/Star_Sports_HD1_Hindi_BTS/output/index.mpd";
 
         try {
           const response = await fetch('https://raw.githubusercontent.com/alex4528/m3u/refs/heads/main/jstar.m3u');
