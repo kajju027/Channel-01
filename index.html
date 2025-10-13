@@ -122,11 +122,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Force 396p default if available
         const tracks = player.getVariantTracks();
-        const track396 = tracks.find(t => t.height === 396);
+        const track396 = tracks.find(t => t.height === 360);
         if (track396) {
             await player.selectVariantTrack(track396, /* clearBuffer= */ true);
             player.configure({ abr: { enabled: false } }); // lock resolution
-            console.log('🎥 Default resolution set to 396p');
+            console.log('🎥 Default resolution set to 360p');
         }
 
     } catch (error) {
