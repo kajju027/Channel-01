@@ -1,124 +1,145 @@
-<!DOCTYPE html>  
-<html>  
-<head>  
-  <meta charset="UTF-8">  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-  <title>TNT 1 Sports</title>     
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js" crossorigin="anonymous"></script>  
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css" crossorigin="anonymous">  
-  <style>  
-   * { margin: 0; padding: 0; box-sizing: border-box; }  
-    html, body {  
-      background: #000;  
-      height: 100vh;  
-      width: 100vw;  
-      overflow: hidden;  
-      font-family: system-ui, -apple-system, sans-serif;  
-    }  
-    .shaka-video-container {  
-      position: absolute;  
-      inset: 0;  
-      width: 100%;  
-      height: 100%;  
-    }  
-    video {  
-      width: 100%;  
-      height: 100%;  
-      background: #000;  
-      object-fit: contain;  
-    }  
-    .shaka-spinner-container,  
-    .shaka-spinner,  
-    .shaka-spinner-svg {  
-      display: none !important;  
-      visibility: hidden !important;  
-      opacity: 0 !important;  
-    }  
-  </style>  
-</head>  
-<body>  
-  <div class="shaka-video-container" data-shaka-player>  
-    <video autoplay playsinline preload="metadata" poster="https://i.ibb.co/pBzSKg3z/1586162092-020d20c6f8b5fd388ed06ba6929021b826007c55c5fa007f23d6fbac44c2e489-d.webp"></video>  
-  </div>  
-  
-  <script>  
-    document.addEventListener('DOMContentLoaded', async () => {  
-      shaka.polyfill.installAll();  
-  
-      if (!shaka.Player.isBrowserSupported()) {  
-        console.error('Browser not supported');  
-        return;  
-      }  
-  
-      const video = document.querySelector('video');  
-      const player = new shaka.Player();  
-      await player.attach(video);  
-  
-      const container = document.querySelector('.shaka-video-container');  
-      const ui = new shaka.ui.Overlay(player, container, video);  
-  
-      ui.configure({  
-        controlPanelElements: [  
-          'play_pause', 'time_and_duration', 'mute', 'volume',  
-          'spacer', 'language', 'captions', 'picture_in_picture',  
-          'quality', 'fullscreen'  
-        ],  
-        volumeBarColors: {  
-          base: 'rgba(255, 192, 203, 0.3)',  
-          level: 'rgb(255, 105, 180)'  
-        },  
-        seekBarColors: {  
-          base: 'rgba(255, 255, 0, 0.3)',  
-          buffered: 'rgba(255, 255, 0, 0.6)',  
-          played: 'rgb(255, 255, 0)'  
-        }  
-      });  
-  
-      // ✅ Your DRM Key + MPD URL  
-      let drmConfig = {  
-        clearKeys: {  
-          "5deb190b1dac28e46c0bdada7668b7de": "ddd2b372702e42b0d2708a70b91dec8d"  
-        }  
-      };  
-  
-      let streamUrl = "https://ottb.live.cf.ww.aiv-cdn.net/lhr-nitro/live/dash/enc/bsaaetko8v/out/v1/bd3b0c314fff4bb1ab4693358f3cd2d3/cenc.mpd";  
-  
-      player.configure({  
-        drm: drmConfig,  
-        streaming: {  
-          lowLatencyMode: true,  
-          bufferingGoal: 15,  
-          rebufferingGoal: 2,  
-          bufferBehind: 15,  
-          retryParameters: {  
-            timeout: 10000,  
-            maxAttempts: 5,  
-            baseDelay: 300,  
-            backoffFactor: 1.2  
-          },  
-          segmentRequestTimeout: 8000,  
-          segmentPrefetchLimit: 2,  
-          useNativeHlsOnSafari: true  
-        },  
-        manifest: {  
-          retryParameters: {  
-            timeout: 8000,  
-            maxAttempts: 3  
-          }  
-        }  
-      });  
-  
-      player.addEventListener('error', (event) => {  
-        console.error('Shaka Player Error:', event.detail);  
-      });  
-  
-      try {  
-        await player.load(streamUrl);  
-        console.log("Stream loaded successfully");  
-      } catch (error) {  
-        console.error('Load error:', error);  
-      }  
-    });  
-  </script>  
-</body>  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tmkc</title>
+
+<!-- Shaka Player UI CSS -->
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.6/controls.min.css">
+
+<style>
+body, html {
+    margin: 0;
+    padding: 0;
+    background: #000;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#player-container {
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 16/9;
+    position: relative;
+    background: black;
+}
+
+video.shaka-video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: black;
+}
+
+/* Poster overlay (visible until video starts) */
+#poster-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 10;
+    transition: opacity 0.5s ease;
+}
+
+/* Ensure Shaka controls visible above video */
+.shaka-controls-container {
+    z-index: 9 !important;
+    background: transparent !important;
+}
+
+.shaka-controls-button-panel button {
+    display: inline-block !important;
+}
+</style>
+</head>
+<body>
+
+<div id="player-container">
+    <!-- Poster overlay (add your image URL below) -->
+    <div id="poster-overlay"
+         style="background-image: url('https://example.com/poster.jpg');"></div>
+
+    <video id="video" autoplay playsinline muted class="shaka-video"></video>
+</div>
+
+<!-- Shaka Player JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.6/shaka-player.ui.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const video = document.getElementById('video');
+    const container = document.getElementById('player-container');
+    const posterOverlay = document.getElementById('poster-overlay');
+
+    // Initialize Shaka Player
+    const player = new shaka.Player(video);
+    const ui = new shaka.ui.Overlay(player, container, video);
+
+    player.addEventListener('error', e => console.error('Error code', e.detail.code, 'object', e.detail));
+
+    // Configure UI controls
+    ui.configure({
+        controlPanelElements: [
+            'play_pause',
+            'mute',
+            'volume',
+            'spacer',
+            'settings',
+            'quality',
+            'playback_rate',
+            'picture_in_picture',
+            'fullscreen'
+        ],
+        settingsMenuElements: [
+            'quality',
+            'playback_rate'
+        ]
+    });
+
+    // Configure player
+    player.configure({
+        drm: {
+            clearKeys: {
+                'a6dfc4f17d70d8d07639659193f03b25': '893eacfabe386144b81733d622a7ad17'
+            }
+        },
+        abr: { enabled: true } // Auto bitrate
+    });
+
+    const manifestUri = 'https://live2.shoq.com.pk/live/eds/ICC_Women_World_Cup_2025/DASH/ICC_Women_World_Cup_2025.mpd';
+
+    try {
+        await player.load(manifestUri);
+        console.log('✅ Stream loaded successfully');
+
+        // Force 396p default if available
+        const tracks = player.getVariantTracks();
+        const track396 = tracks.find(t => t.height === 396);
+        if (track396) {
+            await player.selectVariantTrack(track396, /* clearBuffer= */ true);
+            player.configure({ abr: { enabled: false } }); // lock resolution
+            console.log('🎥 Default resolution set to 396p');
+        }
+
+    } catch (error) {
+        console.error('❌ Error loading stream:', error);
+    }
+
+    // Hide poster when playback starts
+    video.addEventListener('playing', () => {
+        posterOverlay.style.opacity = '0';
+        setTimeout(() => posterOverlay.style.display = 'none', 500);
+    });
+});
+</script>
+
+</body>
 </html>
