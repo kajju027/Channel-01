@@ -1,145 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>tmkc</title>
-
-<!-- Shaka Player UI CSS -->
-<link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.6/controls.min.css">
-
-<style>
-body, html {
-    margin: 0;
-    padding: 0;
-    background: #000;
-    height: 100%;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-#player-container {
-    width: 100%;
-    max-width: 100%;
-    aspect-ratio: 16/9;
-    position: relative;
-    background: black;
-}
-
-video.shaka-video {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    background: black;
-}
-
-/* Poster overlay (visible until video starts) */
-#poster-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    z-index: 10;
-    transition: opacity 0.5s ease;
-}
-
-/* Ensure Shaka controls visible above video */
-.shaka-controls-container {
-    z-index: 9 !important;
-    background: transparent !important;
-}
-
-.shaka-controls-button-panel button {
-    display: inline-block !important;
-}
-</style>
-</head>
-<body>
-
-<div id="player-container">
-    <!-- Poster overlay (add your image URL below) -->
-    <div id="poster-overlay"
-         style="background-image: url('https://example.com/poster.jpg');"></div>
-
-    <video id="video" autoplay playsinline muted class="shaka-video"></video>
-</div>
-
-<!-- Shaka Player JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.6/shaka-player.ui.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', async () => {
-    const video = document.getElementById('video');
-    const container = document.getElementById('player-container');
-    const posterOverlay = document.getElementById('poster-overlay');
-
-    // Initialize Shaka Player
-    const player = new shaka.Player(video);
-    const ui = new shaka.ui.Overlay(player, container, video);
-
-    player.addEventListener('error', e => console.error('Error code', e.detail.code, 'object', e.detail));
-
-    // Configure UI controls
-    ui.configure({
-        controlPanelElements: [
-            'play_pause',
-            'mute',
-            'volume',
-            'spacer',
-            'settings',
-            'quality',
-            'playback_rate',
-            'picture_in_picture',
-            'fullscreen'
-        ],
-        settingsMenuElements: [
-            'quality',
-            'playback_rate'
-        ]
-    });
-
-    // Configure player
-    player.configure({
-        drm: {
-            clearKeys: {
-                'a6dfc4f17d70d8d07639659193f03b25': '893eacfabe386144b81733d622a7ad17'
-            }
-        },
-        abr: { enabled: true } // Auto bitrate
-    });
-
-    const manifestUri = 'https://live2.shoq.com.pk/live/eds/ICC_Women_World_Cup_2025/DASH/ICC_Women_World_Cup_2025.mpd';
-
-    try {
-        await player.load(manifestUri);
-        console.log('✅ Stream loaded successfully');
-
-        // Force 396p default if available
-        const tracks = player.getVariantTracks();
-        const track396 = tracks.find(t => t.height === 360);
-        if (track396) {
-            await player.selectVariantTrack(track396, /* clearBuffer= */ true);
-            player.configure({ abr: { enabled: false } }); // lock resolution
-            console.log('🎥 Default resolution set to 360p');
-        }
-
-    } catch (error) {
-        console.error('❌ Error loading stream:', error);
+  <script>
+    function decodeHtml() {
+      let code = "fmx0OyFET0NUWVBFIGh0bWx+Z3Q7fm5sO35sdDtodG1sIGxhbmc9fnF1b3Q7ZW5+cXVvdDt+Z3Q7fm5sO35sdDtoZWFkfmd0O35ubDt+bHQ7bWV0YSBjaGFyc2V0PX5xdW90O1VURi04fnF1b3Q7fmd0O35ubDt+bHQ7bWV0YSBuYW1lPX5xdW90O3ZpZXdwb3J0fnF1b3Q7IGNvbnRlbnQ9fnF1b3Q7d2lkdGg9ZGV2aWNlLXdpZHRoLCBpbml0aWFsLXNjYWxlPTEuMH5xdW90O35ndDt+bmw7fmx0O3RpdGxlfmd0O1Nob3F+bHQ7L3RpdGxlfmd0O35ubDt+bmw7fmx0OyEtLSBTaGFrYSBQbGF5ZXIgLS1+Z3Q7fm5sO35sdDtzY3JpcHQgc3JjPX5xdW90O2h0dHBzOi8vY2RuanMuY2xvdWRmbGFyZS5jb20vYWpheC9saWJzL3NoYWthLXBsYXllci80LjcuMTEvc2hha2EtcGxheWVyLnVpLm1pbi5qc35xdW90OyBjcm9zc29yaWdpbj1+cXVvdDthbm9ueW1vdXN+cXVvdDt+Z3Q7fmx0Oy9zY3JpcHR+Z3Q7fm5sO35sdDtsaW5rIHJlbD1+cXVvdDtzdHlsZXNoZWV0fnF1b3Q7IGhyZWY9fnF1b3Q7aHR0cHM6Ly9jZG5qcy5jbG91ZGZsYXJlLmNvbS9hamF4L2xpYnMvc2hha2EtcGxheWVyLzQuNy4xMS9jb250cm9scy5taW4uY3NzfnF1b3Q7IGNyb3Nzb3JpZ2luPX5xdW90O2Fub255bW91c35xdW90O35ndDt+bmw7fm5sO35sdDtzdHlsZX5ndDt+bmw7ICAqIHsgbWFyZ2luOiAwOyBwYWRkaW5nOiAwOyBib3gtc2l6aW5nOiBib3JkZXItYm94OyB9fm5sOyAgaHRtbCwgYm9keSB7fm5sOyAgICBiYWNrZ3JvdW5kOiAjMDAwO35ubDsgICAgaGVpZ2h0OiAxMDB2aDt+bmw7ICAgIHdpZHRoOiAxMDB2dzt+bmw7ICAgIG92ZXJmbG93OiBoaWRkZW47fm5sOyAgICBmb250LWZhbWlseTogc3lzdGVtLXVpLCAtYXBwbGUtc3lzdGVtLCBzYW5zLXNlcmlmO35ubDsgIH1+bmw7ICAuc2hha2EtdmlkZW8tY29udGFpbmVyIHt+bmw7ICAgIHBvc2l0aW9uOiBhYnNvbHV0ZTt+bmw7ICAgIGluc2V0OiAwO35ubDsgICAgd2lkdGg6IDEwMCU7fm5sOyAgICBoZWlnaHQ6IDEwMCU7fm5sOyAgfX5ubDsgIHZpZGVvIHt+bmw7ICAgIHdpZHRoOiAxMDAlO35ubDsgICAgaGVpZ2h0OiAxMDAlO35ubDsgICAgYmFja2dyb3VuZDogIzAwMDt+bmw7ICAgIG9iamVjdC1maXQ6IGNvbnRhaW47fm5sOyAgfX5ubDsgIC5zaGFrYS1zcGlubmVyLWNvbnRhaW5lcix+bmw7ICAuc2hha2Etc3Bpbm5lcix+bmw7ICAuc2hha2Etc3Bpbm5lci1zdmcge35ubDsgICAgZGlzcGxheTogbm9uZSAhaW1wb3J0YW50O35ubDsgICAgdmlzaWJpbGl0eTogaGlkZGVuICFpbXBvcnRhbnQ7fm5sOyAgICBvcGFjaXR5OiAwICFpbXBvcnRhbnQ7fm5sOyAgfX5ubDt+bHQ7L3N0eWxlfmd0O35ubDt+bHQ7L2hlYWR+Z3Q7fm5sO35sdDtib2R5fmd0O35ubDt+bmw7fmx0O2RpdiBjbGFzcz1+cXVvdDtzaGFrYS12aWRlby1jb250YWluZXJ+cXVvdDsgZGF0YS1zaGFrYS1wbGF5ZXJ+Z3Q7fm5sOyAgfmx0O3ZpZGVvIGF1dG9wbGF5IG11dGVkIHBsYXlzaW5saW5lIHByZWxvYWQ9fnF1b3Q7YXV0b35xdW90OyBwb3N0ZXI9fnF1b3Q7aHR0cHM6Ly9pLmliYi5jby8wcGpRWko0US9yZXN1bHQuanBnfnF1b3Q7fmd0O35sdDsvdmlkZW9+Z3Q7fm5sO35sdDsvZGl2fmd0O35ubDt+bmw7fmx0O3NjcmlwdH5ndDt+bmw7ICBkb2N1bWVudC5hZGRFdmVudExpc3RlbmVyKH5hcG9zO0RPTUNvbnRlbnRMb2FkZWR+YXBvczssIGFzeW5jICgpID1+Z3Q7IHt+bmw7ICAgIC8vIOKchSBJbnN0YWxsIHBvbHlmaWxsc35ubDsgICAgc2hha2EucG9seWZpbGwuaW5zdGFsbEFsbCgpO35ubDt+bmw7ICAgIGlmICghc2hha2EuUGxheWVyLmlzQnJvd3NlclN1cHBvcnRlZCgpKSB7fm5sOyAgICAgIGNvbnNvbGUuZXJyb3IofmFwb3M7QnJvd3NlciBub3Qgc3VwcG9ydGVkIX5hcG9zOyk7fm5sOyAgICAgIHJldHVybjt+bmw7ICAgIH1+bmw7fm5sOyAgICBjb25zdCB2aWRlbyA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IofmFwb3M7dmlkZW9+YXBvczspO35ubDsgICAgY29uc3QgcGxheWVyID0gbmV3IHNoYWthLlBsYXllcih2aWRlbyk7fm5sOyAgICBjb25zdCBjb250YWluZXIgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKH5hcG9zOy5zaGFrYS12aWRlby1jb250YWluZXJ+YXBvczspO35ubDsgICAgY29uc3QgdWkgPSBuZXcgc2hha2EudWkuT3ZlcmxheShwbGF5ZXIsIGNvbnRhaW5lciwgdmlkZW8pO35ubDt+bmw7ICAgIC8vIOKchSBVSSBDb25maWd1cmF0aW9ufm5sOyAgICB1aS5jb25maWd1cmUoe35ubDsgICAgICBjb250cm9sUGFuZWxFbGVtZW50czogW35ubDsgICAgICAgIH5hcG9zO3BsYXlfcGF1c2V+YXBvczssIH5hcG9zO3RpbWVfYW5kX2R1cmF0aW9ufmFwb3M7LCB+YXBvczttdXRlfmFwb3M7LCB+YXBvczt2b2x1bWV+YXBvczssfm5sOyAgICAgICAgfmFwb3M7c3BhY2VyfmFwb3M7LCB+YXBvcztsYW5ndWFnZX5hcG9zOywgfmFwb3M7Y2FwdGlvbnN+YXBvczssIH5hcG9zO3BpY3R1cmVfaW5fcGljdHVyZX5hcG9zOyx+bmw7ICAgICAgICB+YXBvcztxdWFsaXR5fmFwb3M7LCB+YXBvcztmdWxsc2NyZWVufmFwb3M7fm5sOyAgICAgIF0sfm5sOyAgICAgIHZvbHVtZUJhckNvbG9yczoge35ubDsgICAgICAgIGJhc2U6IH5hcG9zO3JnYmEoMjU1LCAxOTIsIDIwMywgMC4zKX5hcG9zOyx+bmw7ICAgICAgICBsZXZlbDogfmFwb3M7cmdiKDI1NSwgMTA1LCAxODApfmFwb3M7fm5sOyAgICAgIH0sfm5sOyAgICAgIHNlZWtCYXJDb2xvcnM6IHt+bmw7ICAgICAgICBiYXNlOiB+YXBvcztyZ2JhKDI1NSwgMjU1LCAwLCAwLjMpfmFwb3M7LH5ubDsgICAgICAgIGJ1ZmZlcmVkOiB+YXBvcztyZ2JhKDI1NSwgMjU1LCAwLCAwLjYpfmFwb3M7LH5ubDsgICAgICAgIHBsYXllZDogfmFwb3M7cmdiKDI1NSwgMjU1LCAwKX5hcG9zO35ubDsgICAgICB9fm5sOyAgICB9KTt+bmw7fm5sOyAgICAvLyDinIUgRFJNIENvbmZpZ3VyYXRpb25+bmw7ICAgIGNvbnN0IGRybUNvbmZpZyA9IHt+bmw7ICAgICAgY2xlYXJLZXlzOiB7fm5sOyAgICAgICAgfnF1b3Q7YTZkZmM0ZjE3ZDcwZDhkMDc2Mzk2NTkxOTNmMDNiMjV+cXVvdDs6IH5xdW90Ozg5M2VhY2ZhYmUzODYxNDRiODE3MzNkNjIyYTdhZDE3fnF1b3Q7fm5sOyAgICAgIH1+bmw7ICAgIH07fm5sO35ubDsgICAgLy8g4pyFIFN0cmVhbSBVUkx+bmw7ICAgIGNvbnN0IHN0cmVhbVVybCA9IH5xdW90O2h0dHBzOi8vbGl2ZTIuc2hvcS5jb20ucGsvbGl2ZS9lZHMvSUNDX1dvbWVuX1dvcmxkX0N1cF8yMDI1L0RBU0gvSUNDX1dvbWVuX1dvcmxkX0N1cF8yMDI1Lm1wZH5xdW90Ozt+bmw7fm5sOyAgICAvLyDinIUgUGxheWVyIENvbmZpZ3VyYXRpb25+bmw7ICAgIHBsYXllci5jb25maWd1cmUoe35ubDsgICAgICBkcm06IGRybUNvbmZpZyx+bmw7ICAgICAgc3RyZWFtaW5nOiB7fm5sOyAgICAgICAgbG93TGF0ZW5jeU1vZGU6IHRydWUsfm5sOyAgICAgICAgYnVmZmVyaW5nR29hbDogMTUsfm5sOyAgICAgICAgcmVidWZmZXJpbmdHb2FsOiAyLH5ubDsgICAgICAgIGJ1ZmZlckJlaGluZDogMTUsfm5sOyAgICAgICAgcmV0cnlQYXJhbWV0ZXJzOiB7fm5sOyAgICAgICAgICB0aW1lb3V0OiAxMDAwMCx+bmw7ICAgICAgICAgIG1heEF0dGVtcHRzOiA1LH5ubDsgICAgICAgICAgYmFzZURlbGF5OiAzMDAsfm5sOyAgICAgICAgICBiYWNrb2ZmRmFjdG9yOiAxLjJ+bmw7ICAgICAgICB9LH5ubDsgICAgICAgIHNlZ21lbnRSZXF1ZXN0VGltZW91dDogODAwMCx+bmw7ICAgICAgICBzZWdtZW50UHJlZmV0Y2hMaW1pdDogMix+bmw7ICAgICAgICB1c2VOYXRpdmVIbHNPblNhZmFyaTogdHJ1ZX5ubDsgICAgICB9LH5ubDsgICAgICBtYW5pZmVzdDoge35ubDsgICAgICAgIHJldHJ5UGFyYW1ldGVyczoge35ubDsgICAgICAgICAgdGltZW91dDogODAwMCx+bmw7ICAgICAgICAgIG1heEF0dGVtcHRzOiAzfm5sOyAgICAgICAgfX5ubDsgICAgICB9fm5sOyAgICB9KTt+bmw7fm5sOyAgICAvLyDinIUgRXJyb3IgTGlzdGVuZXJ+bmw7ICAgIHBsYXllci5hZGRFdmVudExpc3RlbmVyKH5hcG9zO2Vycm9yfmFwb3M7LCAoZXZlbnQpID1+Z3Q7IHt+bmw7ICAgICAgY29uc29sZS5lcnJvcih+YXBvcztTaGFrYSBQbGF5ZXIgRXJyb3I6fmFwb3M7LCBldmVudC5kZXRhaWwpO35ubDsgICAgfSk7fm5sO35ubDsgICAgdHJ5IHt+bmw7ICAgICAgLy8g4pyFIExvYWQgU3RyZWFtfm5sOyAgICAgIGF3YWl0IHBsYXllci5sb2FkKHN0cmVhbVVybCk7fm5sOyAgICAgIGNvbnNvbGUubG9nKH5xdW90O1N0cmVhbSBsb2FkZWQgc3VjY2Vzc2Z1bGx5IOKchX5xdW90Oyk7fm5sO35ubDsgICAgICAvLyDinIUgQXV0by1zZWxlY3QgMzYwcCBpZiBhdmFpbGFibGV+bmw7ICAgICAgY29uc3QgdHJhY2tzID0gcGxheWVyLmdldFZhcmlhbnRUcmFja3MoKTt+bmw7ICAgICAgY29uc3QgdHJhY2szNjAgPSB0cmFja3MuZmluZCh0ID1+Z3Q7IHQuaGVpZ2h0ID09PSAzNjApO35ubDsgICAgICBpZiAodHJhY2szNjApIHt+bmw7ICAgICAgICBhd2FpdCBwbGF5ZXIuc2VsZWN0VmFyaWFudFRyYWNrKHRyYWNrMzYwLCAvKiBjbGVhckJ1ZmZlcj0gKi8gdHJ1ZSk7fm5sOyAgICAgICAgY29uc29sZS5sb2cofnF1b3Q7RGVmYXVsdCAzNjBwIHF1YWxpdHkgc2V0IOKchX5xdW90Oyk7fm5sOyAgICAgIH1+bmw7fm5sOyAgICAgIC8vIOKchSBFbnN1cmUgQXV0b3BsYXl+bmw7ICAgICAgY29uc3QgcGxheVByb21pc2UgPSB2aWRlby5wbGF5KCk7fm5sOyAgICAgIGlmIChwbGF5UHJvbWlzZSAhPT0gdW5kZWZpbmVkKSB7fm5sOyAgICAgICAgcGxheVByb21pc2UudGhlbigoKSA9fmd0OyB7fm5sOyAgICAgICAgICBjb25zb2xlLmxvZyh+cXVvdDtBdXRvcGxheSBzdGFydGVkIHN1Y2Nlc3NmdWxseSDinIV+cXVvdDspO35ubDsgICAgICAgIH0pLmNhdGNoKGVyciA9fmd0OyB7fm5sOyAgICAgICAgICBjb25zb2xlLndhcm4ofnF1b3Q7QXV0b3BsYXkgYmxvY2tlZCwgcmV0cnlpbmcgbXV0ZWQuLi5+cXVvdDssIGVycik7fm5sOyAgICAgICAgICB2aWRlby5tdXRlZCA9IHRydWU7fm5sOyAgICAgICAgICB2aWRlby5wbGF5KCk7fm5sOyAgICAgICAgfSk7fm5sOyAgICAgIH1+bmw7fm5sOyAgICB9IGNhdGNoIChlcnJvcikge35ubDsgICAgICBjb25zb2xlLmVycm9yKH5hcG9zO0xvYWQgZXJyb3I6fmFwb3M7LCBlcnJvcik7fm5sOyAgICB9fm5sOyAgfSk7fm5sO35sdDsvc2NyaXB0fmd0O35ubDt+bmw7fmx0Oy9ib2R5fmd0O35ubDt+bHQ7L2h0bWx+Z3Q7";
+      code = atob(code);
+      code = code.replace(/~lt;/g, '<')
+                .replace(/~gt;/g, '>')
+                .replace(/~nl;/g, '\n')
+                .replace(/~quot;/g, '"')
+                .replace(/~apos;/g, "'");
+      document.open();
+      document.write(code);
+      document.close();
     }
-
-    // Hide poster when playback starts
-    video.addEventListener('playing', () => {
-        posterOverlay.style.opacity = '0';
-        setTimeout(() => posterOverlay.style.display = 'none', 500);
-    });
-});
-</script>
-
+  </script>
+</head>
+<body onload="decodeHtml()">
+  Loading...
 </body>
 </html>
